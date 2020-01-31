@@ -170,7 +170,7 @@ public class InnerFirstVectorOptimizerTest
     assertEquals(newElem(50, 3, 5, 0, 5, 0, 3, 0, 0, 3, 0), sorted.get(8));
   }
 
-  private static Element newElem(int power, int x1, int y1, int... moves)
+  private static Element newElem(float power, int x1, int y1, int... moves)
   {
     Element ret = new Element();
 
