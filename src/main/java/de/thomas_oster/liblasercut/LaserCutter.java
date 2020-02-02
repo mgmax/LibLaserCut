@@ -183,7 +183,25 @@ public abstract class LaserCutter implements Cloneable, Customizable {
     public int estimateJobDuration(LaserJob job) {
         throw new RuntimeException("Method not implemented");
     }
-    
+  
+    /**
+     * Returns an estimated time, how long the job would take
+     * in seconds.
+     * 
+     * This calculation neglects acceleration, it assumes
+     * <code>duration = length * speed</code> for vectors
+     * and <code>duration = number_of_lines * (width * speed + offset)</code> for engrave.
+     * All units are in seconds and millimeters per second.
+     * @param job LaserJob
+     * @param VECTOR_MOVESPEED_X non-cutting (move) speed in mm/s in X direction 
+     * @param VECTOR_MOVESPEED_Y non-cutting (move) speed in mm/s in Y direction 
+     * @param VECTOR_LINESPEED cutting speed in mm/s in X direction if speed is set to 100
+     * @param RASTER_LINEOFFSET additional time per engrave line in seconds
+     * @param RASTER_LINESPEED engrave speed in mm/s if speed is set to 100
+     * @param RASTER3D_LINEOFFSET additional time per engrave3d line in seconds
+     * @param RASTER3D_LINESPEED engrave3d speed in mm/s if speed is set to 100
+     * @return 
+     */
   protected int estimateJobDuration(LaserJob job, double VECTOR_MOVESPEED_X, double VECTOR_MOVESPEED_Y, double VECTOR_LINESPEED, double RASTER_LINEOFFSET, double RASTER_LINESPEED, double RASTER3D_LINEOFFSET, double RASTER3D_LINESPEED)
   {
     //Holds the current Laser Head position in Pixels
@@ -192,12 +210,13 @@ public abstract class LaserCutter implements Cloneable, Customizable {
     double result = 0;//usual offset
     for (JobPart jp : job.getParts())
     {
+      double px2mm = Util.px2mm(1, jp.getDPI());
       if (jp instanceof RasterPart)
       {
         RasterPart rp = (RasterPart) jp;
         Point sp = rp.getRasterStart();
-        result += Math.max((double) (p.x - sp.x) / VECTOR_MOVESPEED_X,
-          (double) (p.y - sp.y) / VECTOR_MOVESPEED_Y);
+        result += Math.max((double) (p.x - sp.x) * px2mm / VECTOR_MOVESPEED_X,
+          (double) (p.y - sp.y) * px2mm / VECTOR_MOVESPEED_Y);
         double linespeed = ((double) RASTER_LINESPEED * rp.getLaserProperty().getSpeed()) / 100;
         ByteArrayList line = new ByteArrayList(rp.getRasterWidth());
         for (int y = 0; y < rp.getRasterHeight(); y++)
@@ -215,7 +234,7 @@ public abstract class LaserCutter implements Cloneable, Customizable {
           if (!lineEmpty)
           {
             int w = rp.getRasterWidth();
-            result += (double) RASTER_LINEOFFSET + (double) w / linespeed;
+            result += (double) RASTER_LINEOFFSET + (double) w * px2mm / linespeed;
             p.x = sp.y % 2 == 0 ? sp.x + w : sp.x;
             p.y = sp.y + y;
           }
@@ -229,8 +248,8 @@ public abstract class LaserCutter implements Cloneable, Customizable {
       {
         Raster3dPart rp = (Raster3dPart) jp;
         Point sp = rp.getRasterStart();
-        result += Math.max((double) (p.x - sp.x) / VECTOR_MOVESPEED_X,
-          (double) (p.y - sp.y) / VECTOR_MOVESPEED_Y);
+        result += Math.max((double) (p.x - sp.x) * px2mm / VECTOR_MOVESPEED_X,
+          (double) (p.y - sp.y) * px2mm / VECTOR_MOVESPEED_Y);
         double linespeed = ((double) RASTER3D_LINESPEED * rp.getLaserProperty().getSpeed()) / 100;
       	ByteArrayList line = new ByteArrayList(rp.getRasterWidth());
         for (int y = 0; y < rp.getRasterHeight(); y++)
@@ -248,7 +267,7 @@ public abstract class LaserCutter implements Cloneable, Customizable {
           if (!lineEmpty)
           {
             int w = rp.getRasterWidth();
-            result += (double) RASTER3D_LINEOFFSET + (double) w / linespeed;
+            result += (double) RASTER3D_LINEOFFSET + (double) w * px2mm / linespeed;
             p.x = sp.y % 2 == 0 ? sp.x + w : sp.x;
             p.y = sp.y + y;
           }
@@ -268,14 +287,14 @@ public abstract class LaserCutter implements Cloneable, Customizable {
               break;
             }
             case MOVETO:
-              result += Math.max((double) (p.x - cmd.getX()) / VECTOR_MOVESPEED_X,
-                (double) (p.y - cmd.getY()) / VECTOR_MOVESPEED_Y);
+              result += Math.max((double) (p.x - cmd.getX()) * px2mm / VECTOR_MOVESPEED_X,
+                (double) (p.y - cmd.getY()) * px2mm / VECTOR_MOVESPEED_Y);
               p = new Point(cmd.getX(), cmd.getY());
               break;
             case LINETO:
               double dist = distance(cmd.getX(), cmd.getY(), p);
               p = new Point(cmd.getX(), cmd.getY());
-              result += dist / speed;
+              result += dist * px2mm / speed;
               break;
           }
         }
