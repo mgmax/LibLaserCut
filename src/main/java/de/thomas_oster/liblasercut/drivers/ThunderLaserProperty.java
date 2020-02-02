@@ -20,7 +20,7 @@
 package de.thomas_oster.liblasercut.drivers;
 
 import de.thomas_oster.liblasercut.LaserProperty;
-import de.thomas_oster.liblasercut.FloatPowerSpeedFocusFrequencyProperty;
+import de.thomas_oster.liblasercut.PowerSpeedFocusFrequencyProperty;
 import java.util.Arrays;
 import java.util.LinkedList;
 
@@ -28,10 +28,8 @@ import java.util.LinkedList;
  *
  * @author kkaempf
  *
- * It's all pretty ugly. This should rather extend PowerSpeedFocusFrequencyProperty.
- * But this is incompatible with RasterizableJobPart(), which is expecting a FloatPowerSpeedFocusProperty :-/
  */
-public class ThunderLaserProperty extends FloatPowerSpeedFocusFrequencyProperty {
+public class ThunderLaserProperty extends PowerSpeedFocusFrequencyProperty {
 
   private int min_power = 10;
   private static final String MIN_POWER = "min power";
