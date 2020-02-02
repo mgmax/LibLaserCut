@@ -131,10 +131,6 @@ public class FloatPowerSpeedFocusProperty implements LaserProperty
   {
     if ("power".equals(name))
     {
-      if (value instanceof Integer) {
-        // convert int to float for compatibility
-        value = (Float) ((float) (Integer) value);
-      }
       this.setPower((Float) value);
     }
     else if ("speed".equals(name))
